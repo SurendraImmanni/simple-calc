@@ -72,6 +72,15 @@ pipeline {
 
                     # Update deployment image if it exists, else apply fresh manifests
                     kubectl set image deployment/simple-calculator \
-                    simple-calculator=${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} --record || \
+                        simple-calculator=${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} --record || \
                     kubectl apply -f deployment.yml
+
                     kubectl apply -f srvc.yml
+
+                    # Ensure rollout is successful
+                    kubectl rollout status deployment/simple-calculator
+                """
+            }
+        }
+    }
+}
