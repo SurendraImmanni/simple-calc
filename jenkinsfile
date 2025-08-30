@@ -1,0 +1,76 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')   // Jenkins credentials for DockerHub
+        DOCKERHUB_USER = "surendra1docker"
+        IMAGE_NAME = "simple-calculator"
+        IMAGE_TAG = "2.0"
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'master',
+                    url: 'https://github.com/SurendraImmanni/web-calculator.git'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            environment {
+                scannerHome = tool 'sonar-scanner'   // Jenkins configured SonarQube scanner
+            }
+            steps {
+                withSonarQubeEnv('SonarQube') {  // Jenkins Sonar server config name
+                    withCredentials([string(credentialsId: 'SONAR_AUTH_TOKEN', variable: 'SONAR_AUTH_TOKEN')]) {
+                        sh '''
+                            $scannerHome/bin/sonar-scanner \
+                            -Dsonar.projectKey=web-calculator \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=http://13.203.56.51:9000 \
+                            -Dsonar.token=$SONAR_AUTH_TOKEN
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                  docker build -t $DOCKERHUB_USER/$IMAGE_NAME:$IMAGE_TAG .
+                '''
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', 
+                                  usernameVariable: 'DOCKERHUB_USER', 
+                                  passwordVariable: 'DOCKERHUB_PSW')]) {
+                    sh '''
+                      echo $DOCKERHUB_PSW | docker login -u $DOCKERHUB_USER --password-stdin
+                      docker push $DOCKERHUB_USER/$IMAGE_NAME:$IMAGE_TAG
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes k3s') {
+            steps {
+                sh '''
+                  # Ensure kubeconfig is already set on Jenkins server (points to your k3s cluster)
+                  kubectl cluster-info
+
+                  # Update the deployment image OR create if not exists
+                  kubectl set image deployment/simple-calculator simple-calculator=$DOCKERHUB_USER/$IMAGE_NAME:$IMAGE_TAG --record || \
+                  kubectl apply -f deployment.yml
+                  kubectl apply -f srvc.yml
+
+                  # Check rollout status
+                  kubectl rollout status deployment/simple-calculator
+                '''
+            }
+        }
+    }
+}
