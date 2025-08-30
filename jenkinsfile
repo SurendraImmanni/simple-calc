@@ -49,6 +49,7 @@ pipeline {
                                   usernameVariable: 'DOCKERHUB_USER', 
                                   passwordVariable: 'DOCKERHUB_PSW')]) {
                     sh '''
+                      echo "DEBUG -> USER=[$DOCKERHUB_USER], IMAGE=[$IMAGE_NAME], TAG=[$IMAGE_TAG]"
                       echo $DOCKERHUB_PSW | docker login -u $DOCKERHUB_USER --password-stdin
                       docker push $DOCKERHUB_USER/$IMAGE_NAME:$IMAGE_TAG
                     '''
