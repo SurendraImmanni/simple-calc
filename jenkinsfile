@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = "simple-calculator"
-        IMAGE_TAG  = "3.0"
+        IMAGE_TAG  = "2.0"
     }
 
     stages {
