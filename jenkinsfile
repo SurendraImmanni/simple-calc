@@ -5,11 +5,11 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')   // Jenkins credentials for DockerHub
         DOCKERHUB_USER = "surendra1docker"
         IMAGE_NAME = "simple-calculator"
-        IMAGE_TAG = "2.0"
+        IMAGE_TAG = "3.0"
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Checkout Code for git') {
             steps {
                 git branch: 'master',
                     url: 'https://github.com/SurendraImmanni/web-calculator.git'
@@ -27,7 +27,7 @@ pipeline {
                             $scannerHome/bin/sonar-scanner \
                             -Dsonar.projectKey=web-calculator \
                             -Dsonar.sources=. \
-                            -Dsonar.host.url=http://13.203.56.51:9000 \
+                            -Dsonar.host.url=http://15.207.80.31:9000 \
                             -Dsonar.token=$SONAR_AUTH_TOKEN
                         '''
                     }
