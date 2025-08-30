@@ -3,23 +3,23 @@ pipeline {
 
     environment {
         IMAGE_NAME = "simple-calculator"
-        IMAGE_TAG = "3.0"
+        IMAGE_TAG  = "3.0"
     }
 
     stages {
         stage('Checkout Code for Git') {
             steps {
                 git branch: 'master',
-                    url: 'https://github.com/SurendraImmanni/web-calculator.git'
+                    url: 'https://github.com/SurendraImmanni/simple-calc.git'
             }
         }
 
         stage('SonarQube Analysis') {
             environment {
-                scannerHome = tool 'sonar-jenkins' // Jenkins configured SonarQube scanner
+                scannerHome = tool 'sonar-jenkins'
             }
             steps {
-                withSonarQubeEnv('SonarQube') {  // Jenkins Sonar server config name
+                withSonarQubeEnv('SonarQube') {
                     withCredentials([string(credentialsId: 'SONAR_AUTH_TOKEN', variable: 'SONAR_AUTH_TOKEN')]) {
                         sh '''
                             $scannerHome/bin/sonar-scanner \
@@ -41,7 +41,7 @@ pipeline {
                     passwordVariable: 'DOCKERHUB_PASSWORD'
                 )]) {
                     sh '''
-                        echo "DEBUG -> Building image for user=[$DOCKERHUB_USER]"
+                        echo "DEBUG -> Building image for [$DOCKERHUB_USER/$IMAGE_NAME:$IMAGE_TAG]"
                         docker build -t $DOCKERHUB_USER/$IMAGE_NAME:$IMAGE_TAG .
                     '''
                 }
@@ -56,7 +56,7 @@ pipeline {
                     passwordVariable: 'DOCKERHUB_PASSWORD'
                 )]) {
                     sh '''
-                        echo "DEBUG -> USER=[$DOCKERHUB_USER], IMAGE=[$IMAGE_NAME], TAG=[$IMAGE_TAG]"
+                        echo "DEBUG -> Pushing image [$DOCKERHUB_USER/$IMAGE_NAME:$IMAGE_TAG]"
                         echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USER --password-stdin
                         docker push $DOCKERHUB_USER/$IMAGE_NAME:$IMAGE_TAG
                     '''
@@ -67,16 +67,14 @@ pipeline {
         stage('Deploy to Kubernetes k3s') {
             steps {
                 sh '''
-                    # Ensure kubeconfig is already set on Jenkins server (points to your k3s cluster)
+                    echo "DEBUG -> Deploying to k3s cluster..."
                     kubectl cluster-info
 
-                    # Update the deployment image OR create if not exists
                     kubectl set image deployment/simple-calculator simple-calculator=$DOCKERHUB_USER/$IMAGE_NAME:$IMAGE_TAG --record || \
                     kubectl apply -f deployment.yml
 
                     kubectl apply -f srvc.yml
 
-                    # Check rollout status
                     kubectl rollout status deployment/simple-calculator
                 '''
             }
