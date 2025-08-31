@@ -1,0 +1,13 @@
+Sonarqube Installation (simpilest)
+
+	for Dev/Test/Learning purpose
+	
+	Pre-requisite: Install Docker
+	
+	-> Install Sonarqube
+sudo docker run -d --name sonarqube \
+  -p 9000:9000 \
+  sonarqube:community
+
+	
+Sonarqube@11 - passwd

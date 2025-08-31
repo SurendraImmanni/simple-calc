@@ -1,0 +1,19 @@
+Stop jenkins
+
+sudo systemctl stop jenkins
+sudo systemctl disable jenkins
+
+Remove Jenkins package
+
+sudo apt remove --purge jenkins -y
+
+Remove Jenkins dependencies
+
+sudo apt autoremove -y
+sudo apt autoclean
+
+Delete jenkins files & configs
+
+sudo rm -rf /var/lib/jenkins
+sudo rm -rf /var/cache/jenkins
+sudo rm -rf /var/log/jenkins

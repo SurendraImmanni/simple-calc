@@ -1,0 +1,2 @@
+docker tag simple-calc:latest surendra1docker/simple-calc:1.0
+docker push surendra1docker/simple-calc:1.0

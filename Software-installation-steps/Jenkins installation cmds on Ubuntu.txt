@@ -1,0 +1,26 @@
+# Update system
+sudo apt update
+sudo apt upgrade -y
+
+# Install Java (OpenJDK 11)
+sudo apt install -y openjdk-11-jdk
+
+# Add Jenkins repo key
+curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | sudo tee \
+  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+
+# Add Jenkins repository
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian binary/ | \
+  sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+# Update and install Jenkins
+sudo apt update
+sudo apt install -y jenkins
+
+# Start and enable Jenkins
+sudo systemctl start jenkins
+sudo systemctl enable jenkins
+
+# Check status
+systemctl status jenkins

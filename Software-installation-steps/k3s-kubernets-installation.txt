@@ -1,0 +1,20 @@
+# Update OS 
+
+	sudo apt update 
+	sudo apt upgrade -y
+
+# Install K3s 
+
+	curl -sfL https://get.k3s.io | sh -
+		This installs K3s and its associated utilities like kubectl, crictl, k3s-killall.sh, and k3s-uninstall.sh
+			
+# Check Status 
+	sudo systemctl status k3s
+	
+# To use kubeconfig follow below commands
+
+	mkdir -p ~/.kube
+    sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+    sudo chown $USER ~/.kube/config
+    sudo chmod 600 ~/.kube/config
+    export KUBECONFIG=~/.kube/config
